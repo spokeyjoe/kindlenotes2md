@@ -20,7 +20,9 @@ def generate_frontmatter_content_with_llm(book_title, sample_highlights_text):
             # This will now contain all highlights (potentially truncated)
             f"{sample_highlights_text}\n\n"
             "Please generate appropriate metadata for a Markdown note. I need:\n"
-            "1. A list of 5-7 relevant tags (e.g., history, revolution).\n"
+            "1. A list of 5-7 relevant tags. Tags should be all lowercase, "
+            "and multi-word tags should be connected by hyphens. "
+            "(e.g., history, china, social-commentary, early-20th-century).\n"
             "2. A concise description (2-3 sentences) of the book's content based on the title and highlights.\n"
             "Return the output as a JSON object with keys 'tags' (a list of strings) and 'description' (a string).\n"
             " Remember: return NOTHING but the JSON object."
