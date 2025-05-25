@@ -160,6 +160,7 @@ def format_to_markdown(parsed_data, llm_frontmatter):
 
     # Use book title as header
     markdown_lines.append(f'# "{parsed_data["book_title"]}"')
+    markdown_lines.append("")
 
     # --- Notes ---
     for note_item in parsed_data["notes"]:
@@ -239,7 +240,7 @@ def main():
         )
         print(
             "[INFO] Sample text for LLM was truncated"
-            f"to {MAX_SAMPLE_TEXT_LENGTH} characters."
+            f" to {MAX_SAMPLE_TEXT_LENGTH} characters."
         )
     elif not sample_text_for_llm:
         print(
