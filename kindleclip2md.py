@@ -147,6 +147,7 @@ def format_to_markdown(parsed_data, llm_frontmatter):
         "tags", ["default_tag"]
     ):  # Ensure there's always a list
         markdown_lines.append(f"  - {tag_item}")
+    markdown_lines.append("  - kindle-highlights")
 
     description_text = llm_frontmatter.get(
         "description", "No description generated.")
