@@ -163,46 +163,20 @@ def format_to_markdown(parsed_data, llm_frontmatter):
     markdown_lines.append("")
 
     # --- Notes ---
-    for note_item in parsed_data["notes"]:
-        if note_item["type"] == "section_header":
+    for note_item in parsed_data['notes']:
+        if note_item['type'] == "section_header":
             markdown_lines.append(f"## {note_item['text']}")
             markdown_lines.append("")
-        elif note_item["type"] == "highlight":
-            heading_parts_list = []
-            if note_item["chapter"] and note_item["chapter"] != "Unknown Chapter":
-                heading_parts_list.append(note_item["chapter"])
-            if note_item["page"]:
-                heading_parts_list.append(f"Page {note_item['page']}")
-            if note_item["location"]:
-                heading_parts_list.append(f"Location {note_item['location']}")
+        elif note_item['type'] == "highlight" or note_item['type'] == "unknown_heading_format":
+            # Use original_heading directly for both successfully parsed and unknown formats
+            heading_text_to_display = note_item.get(
+                'original_heading', 'Unknown Note')
+            markdown_lines.append(f"### {heading_text_to_display}")
 
-            title_output_line = "### "
-            if note_item["color"] and note_item["color"] != "no_color":
-                title_output_line += f"Highlight ({note_item['color']})"
-            else:
-                title_output_line += "Note"
-
-            if heading_parts_list:
-                title_output_line += f" - {' · '.join(heading_parts_list)}"
-            else:  # Fallback if no chapter/page/location parsed
-                default_text = note_item.get(
-                    "original_heading", "Details missing")
-                title_output_line += f" - {default_text}"
-
-            markdown_lines.append(title_output_line)
-
-            if note_item["text"]:
+            if note_item.get('text'):  # Check if text content exists
                 markdown_lines.append(f"> {note_item['text']}")
             markdown_lines.append("")
-        elif note_item["type"] == "unknown_heading_format":
-            original_heading_text = note_item.get(
-                'original_heading', 'Unknown Details'
-            )
-            heading_line = f"### Note - {original_heading_text}"
-            markdown_lines.append(heading_line)
-            if note_item['text']:
-                markdown_lines.append(f"> {note_item['text']}")
-            markdown_lines.append("")
+
     return "\n".join(markdown_lines)
 
 
