@@ -13,6 +13,7 @@ def generate_frontmatter_content_with_llm(book_title, sample_highlights_text):
 
     try:
         from anthropic import Anthropic
+
         client = Anthropic()
         prompt = (
             f"Given the book title '{book_title}'"
@@ -49,9 +50,7 @@ def generate_frontmatter_content_with_llm(book_title, sample_highlights_text):
                 "description": f"Error parsing description. Raw: {content}",
             }
     except Exception as e:
-        print(
-            f"[ERROR] An unexpected error occurred during the API call: {e}"
-        )
+        print(f"[ERROR] An unexpected error occurred during the API call: {e}")
 
     # Fallback if API call is skipped or fails
     print(
@@ -96,8 +95,7 @@ def parse_html_notebook(html_content):
 
         element_classes = element.get("class", [])
         if "sectionHeading" in element_classes:
-            notes.append({"type": "section_header",
-                         "text": element.text.strip()})
+            notes.append({"type": "section_header", "text": element.text.strip()})
         elif "noteHeading" in element_classes:
             heading_text_content = (
                 element.decode_contents().strip()
@@ -149,8 +147,7 @@ def format_to_markdown(parsed_data, llm_frontmatter):
         markdown_lines.append(f"  - {tag_item}")
     markdown_lines.append("  - kindle-highlights")
 
-    description_text = llm_frontmatter.get(
-        "description", "No description generated.")
+    description_text = llm_frontmatter.get("description", "No description generated.")
     # Ensure multi-line descriptions are correctly formatted for YAML
     if "\n" in description_text:
         markdown_lines.append("description: |")
@@ -166,17 +163,19 @@ def format_to_markdown(parsed_data, llm_frontmatter):
     markdown_lines.append("")
 
     # --- Notes ---
-    for note_item in parsed_data['notes']:
-        if note_item['type'] == "section_header":
+    for note_item in parsed_data["notes"]:
+        if note_item["type"] == "section_header":
             markdown_lines.append(f"## {note_item['text']}")
             markdown_lines.append("")
-        elif note_item['type'] == "highlight" or note_item['type'] == "unknown_heading_format":
+        elif (
+            note_item["type"] == "highlight"
+            or note_item["type"] == "unknown_heading_format"
+        ):
             # Use original_heading directly for both successfully parsed and unknown formats
-            heading_text_to_display = note_item.get(
-                'original_heading', 'Unknown Note')
+            heading_text_to_display = note_item.get("original_heading", "Unknown Note")
             markdown_lines.append(f"### {heading_text_to_display}")
 
-            if note_item.get('text'):  # Check if text content exists
+            if note_item.get("text"):  # Check if text content exists
                 markdown_lines.append(f"> {note_item['text']}")
             markdown_lines.append("")
 
@@ -228,8 +227,7 @@ def main():
         parsed_data["book_title"], sample_text_for_llm
     )
 
-    markdown_output_content = format_to_markdown(
-        parsed_data, llm_frontmatter_content)
+    markdown_output_content = format_to_markdown(parsed_data, llm_frontmatter_content)
 
     try:
         with open(args.output_markdown_file, "w", encoding="utf-8") as f:
