@@ -12,13 +12,23 @@ def generate_frontmatter_content_with_llm(book_title, sample_highlights_text):
     print(f"[INFO] Book Title for LLM: {book_title}")
 
     try:
+        import os
         from anthropic import Anthropic
 
-        client = Anthropic()
+        # Check API key
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            print("[ERROR] ANTHROPIC_API_KEY environment variable not set")
+            raise Exception("Missing API key")
+
+        # Print the first few characters of the API key for debugging
+        print(f"[INFO] Using API Key: {api_key[:8]}...")
+
+        client = Anthropic(api_key=api_key)
+
         prompt = (
-            f"Given the book title '{book_title}'"
+            f"Given the book title '{book_title}' "
             "and the following sample highlights:\n\n"
-            # This will now contain all highlights (potentially truncated)
             f"{sample_highlights_text}\n\n"
             "Please generate appropriate metadata for a Markdown note. I need:\n"
             "1. A list of 5-7 relevant tags. Tags should be all lowercase, "
@@ -26,13 +36,15 @@ def generate_frontmatter_content_with_llm(book_title, sample_highlights_text):
             "(e.g., history, china, social-commentary, early-20th-century).\n"
             "2. A concise description (2-3 sentences) of the book's content based on the title and highlights.\n"
             "Return the output as a JSON object with keys 'tags' (a list of strings) and 'description' (a string).\n"
-            " Remember: return NOTHING but the JSON object."
+            "Remember: return NOTHING but the JSON object."
         )
+
         response = client.messages.create(
             model="claude-3-5-haiku-latest",
             max_tokens=300,
             messages=[{"role": "user", "content": prompt}],
         )
+
         content = response.content[0].text
         try:
             llm_output = json.loads(content)
@@ -49,13 +61,21 @@ def generate_frontmatter_content_with_llm(book_title, sample_highlights_text):
                 "tags": ["error_parsing_llm_tags"],
                 "description": f"Error parsing description. Raw: {content}",
             }
+
     except Exception as e:
         print(f"[ERROR] An unexpected error occurred during the API call: {e}")
 
+        if "403" in str(e):
+            print("[ERROR] 403 Forbidden - Possible causes:")
+            print("  1. Invalid or missing API key")
+            print("  2. API key doesn't have required permissions")
+            print("  3. Account billing issues")
+            print("  4. Rate limiting or quota exceeded")
+
     # Fallback if API call is skipped or fails
     print(
-        "[INFO] Using fallback frontmatter content"
-        " because no LLM API was successfully used."
+        "[INFO] Using fallback frontmatter content "
+        "because no LLM API was successfully used."
     )
     return {
         "tags": ["untagged", "needs_review"],
@@ -176,6 +196,7 @@ def format_to_markdown(parsed_data, llm_frontmatter):
             markdown_lines.append(f"### {heading_text_to_display}")
 
             if note_item.get("text"):  # Check if text content exists
+                markdown_lines.append("")
                 markdown_lines.append(f"> {note_item['text']}")
             markdown_lines.append("")
 
